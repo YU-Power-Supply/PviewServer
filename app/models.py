@@ -62,18 +62,18 @@ class skin(BaseModel):
     skin_tone: int = None
     pore_detect: float = None
     dead_skin: float = None
-    oilly: str = None
+    oilly: float = None
     pih: int = None
 
 
 class reco(BaseModel):
-    acne: int = None
-    whitening: int = None
-    stimulus: int = None
-    wrinkle: int = None
-    moisture: int = None
-    moisturizing: int = None
-    oil: int = None
+    a_acne: int = None
+    a_whitening: int = None
+    a_stimulus: int = None
+    a_wrinkle: int = None
+    a_moisture: int = None
+    s_moisturizing: int = None
+    s_oil: int = None
 
 
 class MySkin(BaseModel):

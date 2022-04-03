@@ -16,17 +16,7 @@ def pixelDetector(img):
 
 
 def oilly_normal_dry(img):
-    skinValue = float(pixelDetector(img))/float(height*width)
-
-    if skinValue > 0.1:
-        print(f"유분 : oilly, oilValue : {skinValue*100 : .2f}%")
-        return "oilly"
-    elif skinValue > 0.05:
-        print(f"유분 : normal, oilValue : {skinValue*100 : .2f}%")
-        return "normal"
-    else:
-        print(f"유분 : dry, oilValue : {skinValue*100 : .2f}%")
-        return "dry"
+    return float(pixelDetector(img))/float(height*width)
 
 
 def contrastControlByHistogram(Img):
