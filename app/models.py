@@ -77,9 +77,9 @@ class reco(BaseModel):
 
 
 class MySkin(BaseModel):
-    id: int
+    rank: int
     skindata: skin = None
-    recomand: reco = None
+    recommand: reco = None
 
     class Config:
         orm_mode = True

@@ -38,16 +38,16 @@ async def post_skin(request: Request, file: UploadFile = File(...), session: Ses
     skindata, reco = skin_check(file_location)
     SkinDatas.create(session, auto_commit=True, user_id=user.id, file_name=file_name,
                                  **dict(skindata, **reco))
-    return dict(id=user.id, skindata=skindata, recomand=reco)
+    return dict(rank=1, skindata=skindata, recommand=reco)
 
 
 def skin_check(file_location):
-    wrinkle = Wrinkle.wrinkleDetect(file_location)
+    wrinkle = Wrinkle.wrinkleDetect(file_location) * 10
     skin_tone = SkinTone.skinToneDetect(file_location)
-    pore_detect = Pore.poreDetect(file_location)
+    pore_detect = Pore.poreDetect(file_location)*10
     dead_skin = round(random(), 2)
-    oilly = Oilly.oilly(file_location)
-    pih = PIH.PIH_model(file_location)
+    oilly = Oilly.oilly(file_location)*10
+    pih = PIH.PIH_model(file_location)/1000
 
     skindata = dict(wrinkle=wrinkle, skin_tone=skin_tone,
                     pore_detect=pore_detect, dead_skin=dead_skin, oilly=oilly, pih=pih)
