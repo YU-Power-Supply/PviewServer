@@ -7,7 +7,8 @@ from sqlalchemy.orm import Session
 from app.database.schema import SkinDatas
 from app.models import MySkin
 from app.database.conn import db
-from app.pview_core import Oilly, PIH, Pore, SkinTone, Wrinkle, recommand
+from app.pview_core import Oilly, PIH, Pore, SkinTone, Wrinkle, recommand, DeadSkin
+# from app.common.consts import A_CRITERIA, B_CRITERIA, C_CRITERIA, D_CRITERIA, E_CRITERIA, F_CRITERIA, G_CRITERIA
 
 from random import random
 from datetime import datetime
@@ -21,7 +22,7 @@ router = APIRouter(prefix="/pview")
 @router.post("/skin", status_code=201, response_model=MySkin)
 async def post_skin(request: Request, file: UploadFile = File(...), session: Session = Depends(db.session)):
     """
-    run Skin
+    run Skin}
     :param request:
     """
     extension = file.filename.split(".")[-1] in ("jpg", "jpeg", "png")
@@ -42,12 +43,12 @@ async def post_skin(request: Request, file: UploadFile = File(...), session: Ses
 
 
 def skin_check(file_location):
-    wrinkle = Wrinkle.wrinkleDetect(file_location) * 10
+    wrinkle = Wrinkle.wrinkleDetect(file_location)
     skin_tone = SkinTone.skinToneDetect(file_location)
-    pore_detect = Pore.poreDetect(file_location)*10
-    dead_skin = round(random(), 2)
-    oilly = Oilly.oilly(file_location)*10
-    pih = PIH.PIH_model(file_location)/1000
+    pore_detect = Pore.poreDetect(file_location)
+    dead_skin = DeadSkin.deadSkinDetect(file_location)
+    oilly = Oilly.oilly(file_location)
+    pih = PIH.PIH_model(file_location)
 
     skindata = dict(wrinkle=wrinkle, skin_tone=skin_tone,
                     pore_detect=pore_detect, dead_skin=dead_skin, oilly=oilly, pih=pih)

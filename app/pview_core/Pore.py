@@ -54,5 +54,5 @@ def poreDetect(file_location):
                 zero_count += 1
 
     imgRatio = 1 - (zero_count/(256*256))
-    print(f"모공 : {round(imgRatio,2)}")
-    return round(imgRatio, 5)
+    print(f"모공 : {round(imgRatio*10,5)}")
+    return round(imgRatio*10, 5)

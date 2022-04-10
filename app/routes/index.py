@@ -6,6 +6,7 @@ from starlette.requests import Request
 
 from sqlalchemy.orm import Session
 from app.database.schema import SkinDatas
+from app.models import skin
 
 from app.database.conn import db
 from os import path
@@ -16,6 +17,7 @@ IMG_DIR = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'skindat
 router = APIRouter()
 
 
+'''
 @router.get("/test")
 async def index():
     """
@@ -25,6 +27,13 @@ async def index():
     current_time = datetime.utcnow()
     #return Response(f"Notification API (UTC: {current_time.strftime('%Y.%m.%d %H:%M:%S')})")
     return JSONResponse(status_code=200, content=dict(noti=f"(UTC: {current_time.strftime('%Y.%m.%d %H:%M:%S')})"))
+'''
+
+@router.get("/test", status_code=200)
+async def index(session: Session = Depends(db.session)):
+    skindata = session.query(SkinDatas).all()
+    print(temp)
+    return 0
 
 
 @router.post("/testimg")

@@ -14,5 +14,5 @@ def wrinkleDetect(file_location):
                 zero_count += 1
 
     imgRatio = 1 - (zero_count/(256*256))
-    print(f"주름 : {round(imgRatio,5)}")
-    return round(imgRatio, 5)
+    print(f"주름 : {round(imgRatio*10,5)}")
+    return round(imgRatio*10, 5)

@@ -16,6 +16,8 @@ G_CRITERIA = [0.2, 0.4, 0.6, 0.8, 1.0]
 
 def recommand(oilly, pih, wrinkle, skin_tone, dead_skin, pore_detect):
 
+    if pih > 1:
+        pih = 1
     A = A_acne(pore_detect, oilly, A_CRITERIA)
     B = B_stimulus(pih, B_CRITERIA)  # 임시로 100으로 나눔
     C = C_whitening(skin_tone/6, C_CRITERIA)  # 임시로 백분율 변경

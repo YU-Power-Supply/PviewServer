@@ -36,7 +36,7 @@ def PIH(img):
     # 검출된 특징점 출력 영상 생성
     img = cv2.drawKeypoints(img, kp1, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-    return len(kp1)  # img
+    return len(kp1) / 1000  # img
 
 
 def PIH_model(file_location):

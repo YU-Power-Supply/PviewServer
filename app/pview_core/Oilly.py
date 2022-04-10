@@ -32,4 +32,6 @@ def canny(img):
 
 def oilly(file_location):
     oilly = cv2.resize(cv2.imread(file_location, cv2.IMREAD_COLOR), dsize=(width, height))
-    return oilly_normal_dry(canny(contrastControlByHistogram(oilly)))
+    temp =  oilly_normal_dry(canny(contrastControlByHistogram(oilly)))
+    print("유분 : ", temp*10)
+    return temp*10

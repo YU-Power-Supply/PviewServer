@@ -83,3 +83,10 @@ class MySkin(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class skinlist(BaseModel):
+    slist:List[MySkin] = []
+
+    class Config:
+        orm_mode = True
