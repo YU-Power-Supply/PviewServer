@@ -17,7 +17,7 @@ IMG_DIR = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'skindat
 router = APIRouter()
 
 
-'''
+
 @router.get("/test")
 async def index():
     """
@@ -34,7 +34,7 @@ async def index(session: Session = Depends(db.session)):
     skindata = session.query(SkinDatas).all()
     print(temp)
     return 0
-
+'''
 
 @router.post("/testimg")
 async def post_skin(request: Request, file: UploadFile = File(...), session: Session = Depends(db.session)):
@@ -68,3 +68,4 @@ def skin_check():
 
     return dict(wrinkle=wrinkle, skin_tone=skin_tone,
         pore_detect=pore_detect, dead_skin=dead_skin, oilly=oilly, pih=pih)
+cat: ''$'\n\n': No such file or directory
