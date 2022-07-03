@@ -68,4 +68,3 @@ def skin_check():
 
     return dict(wrinkle=wrinkle, skin_tone=skin_tone,
         pore_detect=pore_detect, dead_skin=dead_skin, oilly=oilly, pih=pih)
-cat: ''$'\n\n': No such file or directory
