@@ -18,7 +18,7 @@ class Config:
 @dataclass
 class LocalConfig(Config):
     PROJ_RELOAD: bool = True
-    DB_URL: str = "mysql+pymysql://admin:1234@0.0.0.0:3306/dev"
+    DB_URL: str = "mysql+pymysql://admin:@localhost:3306/dev"
     TRUSTED_HOSTS = ["*"]
     ALLOW_SITE = ["*"]
 
