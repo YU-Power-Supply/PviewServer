@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import logging
-
+import redis
 
 class SQLAlchemy:
     def __init__(self, app: FastAPI = None, **kwargs):
@@ -68,3 +68,4 @@ class SQLAlchemy:
 
 db = SQLAlchemy()
 Base = declarative_base()  # 상속 클래스들을 알아서 매핑해줌
+rdb = redis.Redis(host='localhost', port=6379, db=0)

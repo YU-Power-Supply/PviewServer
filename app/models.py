@@ -58,25 +58,30 @@ class UserMe(BaseModel):
 
 
 class skin(BaseModel):
-    wrinkle: float = None
+    wrinkle: int = None
     skin_tone: int = None
-    pore_detect: float = None
-    dead_skin: float = None
-    oilly: float = None
+    pore_detect: int = None
+    dead_skin: int = None
+    oilly: int = None
     pih: int = None
-
+    
+    class Config:
+        orm_mode = True
 
 class reco(BaseModel):
-    a_acne: int = None
-    a_whitening: int = None
-    a_stimulus: int = None
-    a_wrinkle: int = None
-    a_moisture: int = None
-    s_moisturizing: int = None
-    s_oil: int = None
+    mbr_no: str = None
+    recogoods1: str = None
+    cossim1: float = None
+    recogoods2: str = None
+    cossim2: float = None
+    recogoods3: str = None
+    cossim3: float = None
+    
+    class Config:
+        orm_mode = True
 
 
-class MySkin(BaseModel):
+class MySkin(BaseModel): # 이거 안쓰면 지우기
     rank: int
     skindata: skin = None
     recommand: reco = None
@@ -85,8 +90,37 @@ class MySkin(BaseModel):
         orm_mode = True
 
 
-class skinlist(BaseModel):
+class skinlist(BaseModel): # 이거 안쓰면 지우기
     slist:List[MySkin] = []
 
     class Config:
         orm_mode = True
+
+class cosmetic(BaseModel):
+    goods_no: str = None
+    goods_nm: str = None
+    brand_nm: str = None
+    price: int = None
+    ingredient: str = None
+    
+    class Config:
+        orm_mode = True
+
+
+####---- for redis ----####
+
+class RedisUser(BaseModel):
+    email: str = None
+    password: str = None
+
+class RedisEmail(BaseModel):
+    email: str = None
+
+class RedisSkin(BaseModel):
+    email: str = None
+    wrinkle: str = None
+    skin_tone: str = None
+    pore_detect: str = None
+    dead_skin: str = None
+    oilly: str = None
+    pih: str = None

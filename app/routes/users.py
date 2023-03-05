@@ -18,5 +18,4 @@ async def get_user(request: Request):
     """
     user = request.state.user
     user_info = Users.get(id=user.id)
-    print(user_info)
     return user_info

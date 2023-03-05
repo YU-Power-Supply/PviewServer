@@ -1,7 +1,7 @@
 JWT_SECRET = "adgwer"
 JWT_ALGORITHM = "HS256"
 EXCEPT_PATH_LIST = ["/test", "/testimg", "/openapi.json"]
-EXCEPT_PATH_REGEX = "^(/docs|/redoc|/api/auth)"
+EXCEPT_PATH_REGEX = "^(/docs|/redoc|/api/auth|/api/search|/redis|/api/rpview|/api/rauth)"
 
 
 A_CRITERIA = [0.2, 0.25, 0.3, 1.0]

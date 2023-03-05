@@ -85,6 +85,8 @@ class BaseMixin:
                 cond.append((col <= val))
             elif len(key) == 2 and key[1] == 'in':
                 cond.append((col.in_(val)))
+            elif len(key) == 2 and key[1] == 'like':
+                cond.append((col.like(f"%{val}%")))
         obj = cls()
         if session:
             obj._session = session
@@ -127,6 +129,7 @@ class BaseMixin:
             ret = self._q.first()
         if auto_commit:
             self._session.commit()
+
         return ret
 
     def delete(self, auto_commit: bool = False):
@@ -134,8 +137,8 @@ class BaseMixin:
         if auto_commit:
             self._session.commit()
 
-    def all(self):
-        result = self._q.all()
+    def all(self, limit: int = 999):
+        result = self._q.limit(limit).all()
         self.close()
         return result
 
@@ -166,24 +169,38 @@ class Users(Base, BaseMixin):
 
 class SkinDatas(Base, BaseMixin):
     __tablename__ = "skindatas"
-    wrinkle = Column(Float, nullable=False)
-    skin_tone = Column(Integer, nullable=False)
-    pore_detect = Column(Float, nullable=False)
-    dead_skin = Column(Float, nullable=False)
-    oilly = Column(Float, nullable=False)
-    pih = Column(Integer, nullable=False)
-
-    a_acne = Column(Integer, nullable=False)
-    a_stimulus = Column(Integer, nullable=False)
-    a_whitening = Column(Integer, nullable=False)
-    a_wrinkle = Column(Integer, nullable=False)
-    a_moisture = Column(Integer, nullable=False)
-    s_moisturizing = Column(Integer, nullable=False)
-    s_oil = Column(Integer, nullable=False)
-
-    file_name = Column(String(length=100), nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     user = relationship('Users', backref="skindatas")
+    file_name = Column(String(length=100), nullable=False)
+    
+    wrinkle = Column(Float, nullable=True)
+    skin_tone = Column(Integer, nullable=True)
+    pore_detect = Column(Float, nullable=True)
+    dead_skin = Column(Float, nullable=True)
+    oilly = Column(Float, nullable=True)
+    pih = Column(Integer, nullable=True)
+    
+    updated_at = Column(DateTime, nullable=False, default=func.utc_timestamp(), onupdate=func.utc_timestamp())
+
+class Cosmetics(Base, BaseMixin):
+    __tablename__ = "cosmetic"
+    goods_no = Column(String(length=16), nullable=True)
+    goods_nm = Column(String(length=20), nullable=True)
+    brand_nm = Column(String(length=20), nullable=False)
+    category = Column(String(length=10), nullable=False)
+    price = Column(Integer, nullable=False)
+    ingredient = Column(String(length=250), nullable=False)
+
+class Recommandation(Base, BaseMixin):
+    __tablename__ = "recommandation"
+    mbr_no = Column(String(length=16), nullable=True)
+    recogoods1 = Column(String(length=80), nullable=True)
+    cossim1 = Column(String(length=80), nullable=True)
+    recogoods2 = Column(String(length=80), nullable=True)
+    cossim2 = Column(String(length=80), nullable=True)
+    recogoods3 = Column(String(length=80), nullable=True)
+    cossim3 = Column(String(length=80), nullable=True)
+    
 
 
 """

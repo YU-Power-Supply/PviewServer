@@ -1,44 +1,56 @@
 import cv2
 import numpy as np
+import tensorflow as tf
+import PIL
+from tensorflow import keras
+import  copy
 
-height = 320
-width = 320
-alpha = 0.6
-
-def contrastControlByHistogram(Img, alpha):
-    func = (1+alpha) * Img - (alpha * 128)  # 128을 기준으로 명암 맞춰줌
-    dst = np.clip(func, 0, 255).astype(np.uint8)
-    return dst
-
-# Canny Edge
-# cv2.Canny(image, threshold1, threshold2, edge = None, apertureSize = None, L2gradient = None)
-# Gausian Blur
-# cv2.GaussianBlur(image, ksize, sigmaX, dst=None, sigmaY=None, borderType=None)
-# [sigmaX, sigmaY : x, y 편향]
-# [ksize : 가우시안 커널 크기, (0, 0)을 지정하면 sigma 값에 의해 자동 결정됨]
-# [borderType : 가장자리 픽셀 확장 방식]
+from tensorflow.keras.models import load_model
 
 
-def PIH(img):
 
-    # 특징점 알고리즘 객체 생성 (KAZE, AKAZE, ORB 등)
-    feature = cv2.KAZE_create(threshold=0.0002)  # 방향 성분은 표현이 안됌
-    # feature = cv2.AKAZE_create() # 카제를 빠르게, accelateKaze, 방향선분 표현
-    # feature = cv2.ORB_create() # 가장 빠르지만 성능이 떨어짐
+def detect_pih(img, model_path):
 
-    # 특징점 검출
-    kp1 = feature.detect(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY))
-    # kp2 = feature.detect(src2)
+  # 1차 색소침착 검출
+  img_cie_lab = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
+  
+  cie_l, _, cie_b = cv2.split(img_cie_lab)
+  
+  # individual typology angle
+  ita = ((np.arctan((cie_l-50)/cie_b))*180/np.pi).astype(np.uint8)
+  height, _ = ita.shape
+  
+  cut_st = 0.26
+  cut_ed = 0.42
+  
+  # 강한색소침착
+  ita_strong = copy.deepcopy(ita)
+  ita_strong[0:int(height*cut_st)][:][ita_strong[0:int(height*cut_st)][:]<np.mean(ita)*0.35] = 255
+  ita_strong[int(height*cut_ed):][:][ita_strong[int(height*cut_ed):][:]<np.mean(ita)*0.35] = 255
+  
+  # 중간색소침착
+  ita_normal = copy.deepcopy(ita)
+  ita_normal[0:int(height*cut_st)][:][ita_normal[0:int(height*cut_st)][:]<np.mean(ita)*0.42] = 255
+  ita_normal[int(height*cut_ed):][:][ita_normal[int(height*cut_ed):][:]<np.mean(ita)*0.42] = 255
 
-    # 검출된 특징점 갯수 파악
-    print(f"색소침착 : {len(kp1)}")
+  # 약한 색소침착
+  ita_weak = copy.deepcopy(ita)
+  ita_weak[0:int(height*cut_st)][:][ita_weak[0:int(height*cut_st)][:]<np.mean(ita)*0.60] = 255
+  ita_weak[int(height*cut_ed):][:][ita_weak[int(height*cut_ed):][:]<np.mean(ita)*0.60] = 255
 
-    # 검출된 특징점 출력 영상 생성
-    img = cv2.drawKeypoints(img, kp1, None, flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+  # 색소침착 합병
+  img_pih = cv2.merge((ita_strong, ita_normal, ita_weak))
 
-    return len(kp1) / 1000  # img
+  # # 눈가 그림자 제거
+  img_pih[img_pih]
 
+  # 2차 색소침착 검출 
+  # test_model(img_origin, model_path)
 
-def PIH_model(file_location):
-    pih_img = (cv2.resize(cv2.imread(file_location, cv2.IMREAD_COLOR), dsize=(width, height)))
-    return PIH(contrastControlByHistogram(pih_img, 0.6))
+  # 색소침착 점수 출력부
+  P, S_SCORE = 1 , 0
+  pih_score = cv2.mean(3*cv2.mean(ita_strong) + 2*cv2.mean(ita_normal) + cv2.mean(ita_weak))[0] * P + S_SCORE * (1-P)
+  
+  pih_score = (100 - np.clip(pih_score, 0, 100).astype(np.uint8))
+  
+  return pih_score

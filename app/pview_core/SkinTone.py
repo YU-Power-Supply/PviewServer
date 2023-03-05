@@ -2,79 +2,91 @@ import numpy as np
 import cv2
 
 
-def skinToneDetect(file_location):
+def averaging_skintone(img, side_length):
 
-    imgSize = (256, 256)
+    img_HSV = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) #HSV 영역으로 색변환
+    img_YCrCb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb) # YCrCb 영역으로 색변환
 
-    img = cv2.imread(file_location)
-    img = cv2.resize(img, imgSize)
+    # display_image(img_HSV, "HSV")
+    # display_image(img_YCrCb, "YCrCb")
 
-    # ----------------------<lab 변환 및 명도 평균값으로 이미지 재생성>--------------------------
-    img_lab = cv2.cvtColor(img, cv2.COLOR_BGR2Lab)
+    # aggregate skin pixels
+    blue = []
+    green = []
+    red = []
 
-    img_l, img_a, img_b = cv2.split(img_lab)  # L : 밝기 / A : 초록-빨강 / B : 파랑-노랑
-    # origin_merge = cv2.merge((img_l, img_a, img_b))
+    # 모든 픽셀에 대해 피부라고 판단되는 영역만 검출
+    for i in range (side_length):
+        for j in range (side_length):
+            if((img_HSV.item(i, j, 0) <= 170) and (140 <= img_YCrCb.item(i, j, 1) <= 170) and (90 <= img_YCrCb.item(i, j, 2) <= 120)):
+                blue.append(img[i, j].item(0))
+                green.append(img[i, j].item(1))
+                red.append(img[i, j].item(2))
+            else:
+                img[i, j] = [0, 0, 0]
+    
+    # display_image(img_face_only, "final segmentation")
 
-    n_img_l = np.array(img_l)
-    avrValue = n_img_l.mean()
-    avr_l = np.full(imgSize, avrValue, dtype="uint8")
+    # determine mean skin tone estimate
+    skin_tone_estimate_BGR = [np.mean(blue), np.mean(green), np.mean(red)]
+    return skin_tone_estimate_BGR
 
-    # refer = np.full(imgSize, 128, dtype="uint8")
-    new_lab = cv2.merge((avr_l, img_a, img_b))
-    new_img = cv2.cvtColor(new_lab, cv2.COLOR_Lab2BGR)
-# --------------------------<RGB평균값으로 이미지 재생성>-----------------------------
-    B_c, G_c, R_c = cv2.split(new_img)
-    B_c = np.array(B_c)
-    G_c = np.array(G_c)
-    R_c = np.array(R_c)
 
-    BAvr = B_c.mean()
-    GAvr = G_c.mean()
-    RAvr = R_c.mean()
+def skinToneDetect(image, side_length = 256, pixel_range = 16): # 원래값은 540, 40 이었음
+    
+    # 피부톤 컬러차트
+    color_chart = [  (0,0,0),         # 0. 점수 없음
+                (212,230,248),  # 1. Ecru (가장 밝음)
+                (195,220,245),  # 2. Beige
+                (187,214,243),  # 3. Moccasin
+                (161,198,239),  # 4. Fawn
+                (144,188,236),  # 5. Tan
+                (119,172,231),  # 6. Wren
+                (93,157,227),   # 7. Cinnamon
+                (76,146,224),   # 8. Tawny
+                (59,136,221),   # 9. Nutmeg
+                (35,116,205),   # 10. Copper
+                (26,87,154),    # 11. Woodland
+                (16,53,94)] 
 
-    meanB_C = np.full(imgSize, BAvr, dtype="uint8")
-    meanG_C = np.full(imgSize, GAvr, dtype="uint8")
-    meanR_C = np.full(imgSize, RAvr, dtype="uint8")
+    # 이미지 입력 #
+    image = cv2.resize(image, (side_length, side_length))
+    global_RGB = averaging_skintone(image, side_length)
+    global_error = [sum(np.abs(np.array(global_RGB) - np.array(tone))) for tone in color_chart]
+    global_value = global_error.index(min(global_error))
 
-    meanImg = cv2.merge((meanB_C, meanG_C, meanR_C))
+    grid_value = []
+    division = side_length//pixel_range
+    for mode in (0,1):
+        for i, start_value in enumerate(range(0,side_length, division), start=1):
+            if mode == 0:
+                split_img = image[start_value:i*division, :]
+            elif mode == 1:
+                split_img = image[:, start_value:i*division]
 
-    # cv2.imshow('origin', img) #원본이미지
-    # cv2.imshow('lab', img_lab) #lab공간으로 변환된 이미지
-    # cv2.imshow('labcvt', img_lab_brg) #lab으로 갔다가 다시 BGR로 합친 이미지
+            img_b, img_g, img_r = cv2.split(split_img)
+            
+            if len(img_b[img_b>0]) == 0:
+                filtered_img_b = [0]
+            else:
+                filtered_img_b = img_b[img_b>0]
+            if len(img_g[img_g>0]) == 0:
+                filtered_img_g = [0]
+            else:
+                filtered_img_g = img_g[img_g>0]
+            if len(img_r[img_r>0]) == 0:
+                filtered_img_r = [0]
+            else:
+                filtered_img_r = img_r[img_r>0]
 
-    # cv2.imshow('lc', l_c)
-    # cv2.imshow('ac', a_c)
-    # cv2.imshow('bc', b_c)
-    # cv2.imshow('new', new_img)
-    # cv2.imshow('meanImg', meanImg)
-    # --------------------------<비교이미지 불러오기 및 색 추출>-----------------------------
-    value_img = cv2.imread('app/pview_core/skinToneValue.png')
-    value_img = cv2.resize(value_img, imgSize)
+            rgb_value = [np.mean(filtered_img_b), np.mean(filtered_img_g), np.mean(filtered_img_r)]
+            
+            errorRate = []
+            for tone in color_chart:
+                errorRate.append(sum(np.abs(np.array(rgb_value) - np.array(tone))))
+            partValue = errorRate.index(min(errorRate))
+            grid_value.append(partValue)
 
-    x_ref = 0.1667
-    y_ref = 0.25
-
-    grid_1 = [int(imgSize[0]*(x_ref*1)), int(imgSize[1]*(y_ref*1))]
-    grid_2 = [int(imgSize[0]*(x_ref*3)), int(imgSize[1]*(y_ref*1))]
-    grid_3 = [int(imgSize[0]*(x_ref*5)), int(imgSize[1]*(y_ref*1))]
-    grid_4 = [int(imgSize[0]*(x_ref*1)), int(imgSize[1]*(y_ref*3))]
-    grid_5 = [int(imgSize[0]*(x_ref*3)), int(imgSize[1]*(y_ref*3))]
-    grid_6 = [int(imgSize[0]*(x_ref*5)), int(imgSize[1]*(y_ref*3))]
-
-    skinTone = [value_img[grid_1[0]][grid_1[1]],
-                value_img[grid_2[0]][grid_2[1]],
-                value_img[grid_3[0]][grid_3[1]],
-                value_img[grid_4[0]][grid_4[1]],
-                value_img[grid_5[0]][grid_5[1]],
-                value_img[grid_6[0]][grid_6[1]]]
-
-    skinTone = np.array(skinTone)
-
-    # --------------------------<피부톤 결과 도출>-----------------------------
-    midColor = np.array(meanImg[0][0])
-    errorRate = []
-    for tone in skinTone:
-        errorRate.append(sum(tone-midColor))
-    print(f'피부톤 : {(errorRate.index(min(errorRate)) + 1)} type')
-    # cv2.waitKey(0)
-    return (errorRate.index(min(errorRate)) + 1)
+    gridWeight = 0.8
+    return 100 - round(sum(np.array(grid_value)*0.29761) * gridWeight + global_value * (1-gridWeight), 1)
+    

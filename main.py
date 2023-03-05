@@ -12,7 +12,7 @@ from app.database.conn import db, Base
 from app.common.config import conf
 from app.middlewares.token_vaildator import access_control
 from app.middlewares.trusted_hosts import TrustedHostMiddleware
-from app.routes import index, auth, users, pview
+from app.routes import index, auth, users, pview, search, redis_server, auth_redis, pview_redis
 # from app.routes import index
 
 API_KEY_HEADER = APIKeyHeader(name="Authorization", auto_error=False)  # api 권한 추가
@@ -38,7 +38,11 @@ def create_app():
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=conf().TRUSTED_HOSTS, except_path=['/health'])
     # 라우터 정의
     app.include_router(index.router)
+    app.include_router(redis_server.router)
     app.include_router(auth.router, tags=["Authentication"], prefix="/api")
+    app.include_router(auth_redis.router, tags=["redisAuth"], prefix="/api")
+    app.include_router(pview_redis.router, tags=["redisPview"], prefix="/api")
+    app.include_router(search.router, tags=["Search"], prefix="/api")
     app.include_router(users.router, tags=["Users"], prefix="/api", dependencies=[Depends(API_KEY_HEADER)])
     app.include_router(pview.router, tags=["pview"], prefix="/api", dependencies=[Depends(API_KEY_HEADER)])
 
