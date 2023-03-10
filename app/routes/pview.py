@@ -8,11 +8,12 @@ import shutil
 import numpy as np
 import faiss
 import pandas as pd
+from app.recommand import recommand
 
 from app.database.schema import SkinDatas, Recommandation, Cosmetics
 from app.models import skin, MySkin
 from app.database.conn import db
-from app.pview_core import Oilly, PIH, Pore, SkinTone, Wrinkle, recommand, DeadSkin
+from app.pview_core import Oilly, PIH, Pore, SkinTone, Wrinkle, DeadSkin
 from app.pview_core.skin_cropper import skin_cropper
 
 
@@ -22,7 +23,7 @@ import secrets
 IMG_DIR = path.join(path.dirname(path.dirname(path.abspath(__file__))), 'skindata')
 router = APIRouter(prefix="/pview")
 
-user_vectors_df = pd.read_excel('app/pview_core/userreco.xlsx', index_col=0)
+user_vectors_df = pd.read_excel('app/recommand/userreco.xlsx', index_col=0)
 user_vectors_search = user_vectors_df.reset_index()
 user_vectors_df = user_vectors_df.set_index('mbrNo')
 user_vectors = user_vectors_df.to_numpy(dtype=np.float32)

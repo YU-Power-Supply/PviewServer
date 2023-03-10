@@ -1,8 +1,12 @@
+'''
+    분류 : 일반진단
+    목적 : 피부 모공 진단 (서비스용)
+'''
+
 import cv2
 import numpy as np
 
-
-def poreDetect(img):
+def detect_pore(img):
     rgb_planes = cv2.split(img)
 
     result_norm_planes = []

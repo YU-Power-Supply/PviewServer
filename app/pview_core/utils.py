@@ -52,6 +52,30 @@ def saturate_contrastA(Img, standard, alpha):
     dst = np.clip(func, 0, 255).astype(np.uint8)
     return dst
 
+def printContrast(img):
+    height, width, channel = img.shape
+
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    
+    sort_v = np.sort(v.flatten())
+    mask = np.where(sort_v!=0)
+
+    mask_sort_v = sort_v[mask]
+
+    cut_v = mask_sort_v[int(width*height*0.05):int(width*height*0.95)]
+    return np.median(cut_v)
+
+# 명 평준화(제어)
+def saturate_contrastB(Img, boundary):
+    I = printContrast(Img)
+
+    Img = Img+(boundary - I)
+    Img = np.clip(Img, 0, 255).astype(np.uint8)
+    # print(f"{I} -> {printContrast(Img)}")
+    return Img
+
+
 def display_image(image, name):
     window_name = name
     cv2.namedWindow(window_name)

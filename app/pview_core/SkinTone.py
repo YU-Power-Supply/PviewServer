@@ -1,6 +1,11 @@
+'''
+    분류 : 일반진단
+    목적 : 피부톤 검출 (서비스용)
+'''
+
 import numpy as np
 import cv2
-
+# from utils import display_image
 
 def averaging_skintone(img, side_length):
 
@@ -32,7 +37,7 @@ def averaging_skintone(img, side_length):
     return skin_tone_estimate_BGR
 
 
-def skinToneDetect(image, side_length = 256, pixel_range = 16): # 원래값은 540, 40 이었음
+def detect_skintone(image, side_length = 256, pixel_range = 16): # 원래값은 540, 40 이었음
     
     # 피부톤 컬러차트
     color_chart = [  (0,0,0),         # 0. 점수 없음
@@ -88,5 +93,5 @@ def skinToneDetect(image, side_length = 256, pixel_range = 16): # 원래값은 5
             grid_value.append(partValue)
 
     gridWeight = 0.8
-    return 100 - round(sum(np.array(grid_value)*0.29761) * gridWeight + global_value * (1-gridWeight), 1)
+    return 100 - round(sum(np.array(grid_value)*0.29761) * gridWeight + global_value * (1-gridWeight), 4)
     

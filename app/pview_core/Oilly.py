@@ -1,37 +1,54 @@
-import cv2
+'''
+    분류 : 일반진단
+    목적 : 피부 유분 진단 (서비스용)
+'''
+
 import numpy as np
+import cv2
+from app.pview_core.utils import saturate_contrastB, saturate_contrastA
 
-height = 320
-width = 320
-alpha = 0.8
+def oil_detector(img, model):
+    # 명도 평준화 이미지
+    img_saturate = saturate_contrastB(img, 200)
+    
+    # 명도 양극화 이미지
+    img_polarization = saturate_contrastA(img_saturate, 128, 0.5)
 
+    # 벡터이미지
+    output = img_polarization
+    for _ in range(5): 
+        output = saturate_contrastB(output, 140)
+    for _ in range(2):
+        output = saturate_contrastA(output, 50, 0.5)
+    for _ in range(3): 
+        output = saturate_contrastB(output, 140)
+    for _ in range(2):
+        output = saturate_contrastA(output, 50, 0.5)
+    for _ in range(1): 
+        output = saturate_contrastB(output, 140)
+    for _ in range(2):
+        output = saturate_contrastA(output, 50, 0.5)
+    
+    img = output
+#    cv2.imshow('resuilt', output)
+#    cv2.waitKey()
 
-def pixelDetector(img):
-    cnt = 0
-    for i in range(len(img)):
-        for j in range(len(img[0])):
-            if img[i][j] == 255:
-                cnt += 1
-    return cnt
+    img = np.expand_dims(img, 0)
+    
+    img = img/255
+    h = model.predict(img)
+    # Dry && Normal && Oilly Intensity
+    '''
+    result = h.argmax()
+    if result == 2: 
+        return "Oilly"
+    elif result == 1:
+        return "Normal"
+    elif result == 0:
+        return "Dry"
+    else:
+        print("sum error occured on oil predictor")
+        return None
+    '''
 
-
-def oilly_normal_dry(img):
-    return float(pixelDetector(img))/float(height*width)
-
-
-def contrastControlByHistogram(Img):
-    func = (1+alpha) * Img - (alpha * 128)  # 128을 기준으로 명암 맞춰줌
-    dst = np.clip(func, 0, 255).astype(np.uint8)
-    return dst
-
-
-def canny(img):
-    canny = cv2.Canny(img, 150, 450)  # 2:1 혹은 3:1 의비율을 권함
-    return canny
-
-
-def oilly(file_location):
-    oilly = cv2.resize(cv2.imread(file_location, cv2.IMREAD_COLOR), dsize=(width, height))
-    temp =  oilly_normal_dry(canny(contrastControlByHistogram(oilly)))
-    print("유분 : ", temp*10)
-    return temp*10
+    return int(32*h[0][0] + 64*h[0][1] + 96*h[0][2])

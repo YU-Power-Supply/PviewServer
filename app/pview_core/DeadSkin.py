@@ -1,3 +1,8 @@
+'''
+    분류 : 정밀진단
+    목적 : 피부 각질 검출 (서비스용)
+'''
+
 import cv2
 import numpy as np
 import copy
@@ -92,7 +97,7 @@ def deadSkin_model_dataPrepocessing_type_thd_layer(img):
 '''
 
 def detect_deadskin(img, model_path):
-    img = cv2.resize(img, dsize = (width, height))
+    #img = cv2.resize(img, dsize = (width, height))
     img_deadskin_detected = deadSkin_model_dataPrepocessing_type_fst_layer(img)
     img_deadskin_detected2 = deadSkin_model_dataPrepocessing_type_scd_layer(img)
     img_deadskin_detected3 = deadSkin_model_dataPrepocessing_type_thd_layer(img)
@@ -124,7 +129,9 @@ def detect_deadskin(img, model_path):
     
     # moisture
     result = 100 - result
-    standard_value = 43
-    result = - (result - standard_value)  + standard_value
+    standard_value, boundary_value = 43, 20
+    result = - (result - standard_value)  + standard_value 
+    result = np.clip(result, 0, 100).astype(np.uint8)
+    result = np.clip(result + boundary_value, 0, 100).astype(np.uint8)
 
     return result

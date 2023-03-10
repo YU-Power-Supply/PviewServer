@@ -1,32 +1,32 @@
 from fastapi import APIRouter, Depends, File, UploadFile
-from starlette.requests import Request
 from starlette.responses import JSONResponse
+import httpx
 
 import cv2
 import numpy as np
 import faiss
 import pandas as pd
+import json
 
 from app.database.schema import SkinDatas, Recommandation, Cosmetics
 from app import models
 from app.database.conn import rdb
-from app.pview_core import Oilly, PIH, Pore, SkinTone, Wrinkle, recommand, DeadSkin
+from app.pview_core import Oilly, PIH, Pore, SkinTone, Wrinkle, DeadSkin
 from app.pview_core.skin_cropper import skin_cropper
 
-
-from datetime import datetime
-import secrets
-
+#from tensorflow.keras.models import load_model
+#oilmodel = load_model("/home/ubuntu/PviewServer/app/pview_core/weights/oil_model/oilly_model_weight_1203.h5")
+#pihmodel = load_model("/home/ubuntu/PviewServer/app/pview_core/weights/pih_model/pih_model_weight_230221.h5")
 
 router = APIRouter(prefix="/rpview")
 
-user_vectors_df = pd.read_excel('app/pview_core/userreco.xlsx', index_col=0)
+user_vectors_df = pd.read_excel('app/recommand/userreco.xlsx', index_col=0)
 user_vectors_search = user_vectors_df.reset_index()
 user_vectors_df = user_vectors_df.set_index('mbrNo')
 user_vectors = user_vectors_df.to_numpy(dtype=np.float32)
 
 
-user_reco_df = pd.read_excel('app/pview_core/recolist.xlsx', index_col=0)
+user_reco_df = pd.read_excel('app/recommand/recolist.xlsx', index_col=0)
 user_reco_df = user_reco_df.set_index('mbr_no', drop=True)
 
 # Set up Faiss index
@@ -84,18 +84,23 @@ async def post_skin(file: UploadFile = File(...)):
     img = cv2.resize(img, (540, 720))
     
     try :
-        _, masked_img = skin_cropper(img, 'all')
+        _, masked_img = skin_cropper(img)
+        masked_img_256 = cv2.resize(masked_img, (256, 256))
     except:
         return JSONResponse(status_code=400, content=dict(msg="it is not a face image."))
-
-    masked_img_256 = cv2.resize(masked_img, (256, 256))
-
-    skindict = {"skin_tone" : str(SkinTone.skinToneDetect(masked_img_256)),
-                "pore_detect" : str(Pore.poreDetect(masked_img_256)),
-                "pih" : str(PIH.detect_pih(masked_img_256, "app/pview_core/weights/pih_model/pih_model_weight_0907.h5" ))}
+    
+    # Convert the resized image to bytes
+    _, img_encoded = cv2.imencode('.png', masked_img_256)
+    image_bytes = img_encoded.tobytes()
+    
+    async with httpx.AsyncClient() as client:
+        response = await client.post("http://localhost:5001/run_ml", files={"file": image_bytes})
+    
+    skindict = json.loads(response.json())
     
     rdb.hmset(user, skindict)
     return skindict
+
 
 
 @router.post("/detailskin", status_code=201, response_model=models.RedisSkin)
@@ -110,9 +115,9 @@ async def post_skin(file: UploadFile = File(...)):
 
     byte_file = np.frombuffer(await file.read(), np.uint8)
     img = cv2.imdecode(byte_file, cv2.IMREAD_COLOR)
+    img = cv2.resize(img, (256, 256))
 
-
-    skindict = {"wrinkle" : str(Wrinkle.wrinkleDetect(img)),
+    skindict = {"wrinkle" : str(Wrinkle.partWrinkleDetect(img)),
                 "dead_skin" : str(DeadSkin.detect_deadskin(img, ""))}
     
     rdb.hmset(user, skindict)
@@ -156,11 +161,8 @@ async def push_skindata(skin_list: models.RedisSkin):
     rdb.hmset(skin_list.email, skindict)
     return skindict
 
-    
-    
-    
-def input_skindata(skindict: dict):
-
-    return True
-
-
+@router.get("/test", status_code=201) # 강제로 피부데이터 삽입
+async def test():
+    async with httpx.AsyncClient() as client:
+        response = await client.get("http://localhost:5001/register")
+    return response.json()
