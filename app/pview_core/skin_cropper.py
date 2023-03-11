@@ -23,13 +23,13 @@ nose = [6, 122, 188, 217, 198, 209, 49, 48, 219, 218, 237, 44, 1, 274, 457, 438,
 def create_landmark_img(img):
     height, width, channel = img.shape
 
-    mp_holistic = mp.solutions.holistic # mediapipe solutions
+    #mp_holistic = mp.solutions.holistic # mediapipe solutions
     mp_face_mesh = mp.solutions.face_mesh
-    face_mesh = mp_face_mesh.FaceMesh()
-
-     # Initiate holistic model
-    with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
-        
+    with mp_face_mesh.FaceMesh() as face_mesh:
+    
+        # Initiate holistic model
+        #with mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+            
         # Recolor Feed
         image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         # image = cv2.flip(image, 1)
@@ -40,7 +40,7 @@ def create_landmark_img(img):
         results = face_mesh.process(image)
 
         weight = 1.0
-        
+        '''
         if results.multi_face_landmarks:
             for facial_landmarks in results.multi_face_landmarks:
                 # # # Total 468
@@ -118,17 +118,19 @@ def create_landmark_img(img):
                 
                 
             # Recolor image back to BGR for rendering
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            #image.flags.writeable = True
+            #image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+        '''
 
-            lendmark_output = []
+        lendmark_output = []
+        for facial_landmarks in results.multi_face_landmarks:
             # Total 468
             for i in range(0, 468):
                 pt1 = facial_landmarks.landmark[i]
                 x = int(pt1.x * width * 1.0)
                 y = int(pt1.y * height * weight)
                 lendmark_output.append([x,y])
-            return lendmark_output    
+        return lendmark_output
 
 def cropImage(img, area):
     height, width, channel = img.shape
@@ -214,7 +216,7 @@ def skin_cropper(img):
     # img = cv2.imread(os.path.join(data_dir, imgName))
     mask = np.zeros((height,width, 3),dtype = np.uint8)
     facial_landmark = create_landmark_img(img)
-
+    '''
     if roi == 'rightCheek':
         mask = cropImage(img, roi)
     elif roi == 'leftCheek':
@@ -230,24 +232,25 @@ def skin_cropper(img):
     elif roi == 'nose':
         mask = cropImage(img, roi)
     elif roi == 'all':
-        warp_point = [[facial_landmark[123][0], facial_landmark[10][1]], # 좌측볼 x좌표 + 이마 끝 y좌표
-                    [facial_landmark[352][0], facial_landmark[10][1]], # 우측볼 x좌표 + 이마 끝 y좌표
-                    [facial_landmark[352][0], facial_landmark[152][1]], # 우측볼 x좌표 + 턱 끝 y좌표
-                    [facial_landmark[123][0], facial_landmark[152][1]]] # 좌측볼 x좌표 + 턱 끝 y좌표
-        img = warping(img, facial_landmark, width, height, warp_point)
+    '''
 
-        mask1 = cropImage(img, 'rightCheek')
-        mask2 = cropImage(img, 'leftCheek')
-        mask3 = cropImage(img, 'rightEye')
-        mask4 = cropImage(img, 'leftEye')
-        mask5 = cropImage(img, 'forehead')
-        mask6 = cropImage(img, 'chin')
-        mask7 = cropImage(img, 'nose')
+    warp_point = [[facial_landmark[123][0], facial_landmark[10][1]], # 좌측볼 x좌표 + 이마 끝 y좌표
+                [facial_landmark[352][0], facial_landmark[10][1]], # 우측볼 x좌표 + 이마 끝 y좌표
+                [facial_landmark[352][0], facial_landmark[152][1]], # 우측볼 x좌표 + 턱 끝 y좌표
+                [facial_landmark[123][0], facial_landmark[152][1]]] # 좌측볼 x좌표 + 턱 끝 y좌표
+    img = warping(img, facial_landmark, width, height, warp_point)
+    mask1 = cropImage(img, 'rightCheek')
+    mask2 = cropImage(img, 'leftCheek')
+    mask3 = cropImage(img, 'rightEye')
+    mask4 = cropImage(img, 'leftEye')
+    mask5 = cropImage(img, 'forehead')
+    mask6 = cropImage(img, 'chin')
+    mask7 = cropImage(img, 'nose')
 
-        mask = cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(mask1, mask2), mask3), mask4), mask5), mask6), mask7)    
-    
+    mask = cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(cv2.bitwise_or(mask1, mask2), mask3), mask4), mask5), mask6), mask7)    
 
-    else : print("Some error Occured ... , Check Roi name")
+
+    #else : print("Some error Occured ... , Check Roi name")
     masked_img = cv2.bitwise_and(img, mask)
     
     # ## 털 검출

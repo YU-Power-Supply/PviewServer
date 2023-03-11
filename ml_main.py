@@ -6,9 +6,21 @@ import numpy as np
 import json
 
 from app.pview_core import Oilly, PIH, Pore, SkinTone
-from tensorflow.keras.models import load_model
-oilmodel = load_model("/home/ubuntu/PviewServer/app/pview_core/weights/oil_model/oilly_model_weight_1203.h5")
-pihmodel = load_model("/home/ubuntu/PviewServer/app/pview_core/weights/pih_model/pih_model_weight_230221.h5")
+from model_loader import ModelLoader
+
+
+import gc
+from apscheduler.schedulers.background import BackgroundScheduler
+def cleanup_memory():
+    gc.collect()
+
+# Create scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(cleanup_memory, 'interval', seconds=5)
+scheduler.start()
+
+oilmodel = ModelLoader("/home/ubuntu/PviewServer/app/pview_core/weights/oil_model/oilly_model_weight_1203.h5").load_model()
+pihmodel = ModelLoader("/home/ubuntu/PviewServer/app/pview_core/weights/pih_model/pih_model_weight_230221.h5").load_model()
 
 app = FastAPI()
 
@@ -21,6 +33,9 @@ async def register_user(file: bytes = File(...)):
                 "skin_tone" : str(SkinTone.detect_skintone(img)),
                 "pih" : str(PIH.detect_pih(img, pihmodel)),
                 "oilly" : str(Oilly.oil_detector(img, oilmodel))}
+
+    del byte_file
+    del img
 
     return json.dumps(skindict)
 

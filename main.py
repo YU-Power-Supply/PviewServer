@@ -15,6 +15,16 @@ from app.middlewares.trusted_hosts import TrustedHostMiddleware
 from app.routes import index, auth, users, pview, search, auth_redis, pview_redis
 # from app.routes import index
 
+import gc
+from apscheduler.schedulers.background import BackgroundScheduler
+def cleanup_memory():
+    gc.collect()
+
+# Create scheduler
+scheduler = BackgroundScheduler()
+scheduler.add_job(cleanup_memory, 'interval', seconds=5)
+scheduler.start()
+
 API_KEY_HEADER = APIKeyHeader(name="Authorization", auto_error=False)  # api 권한 추가
 
 

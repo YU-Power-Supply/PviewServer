@@ -9,27 +9,27 @@ from app.pview_core.utils import saturate_contrastB, saturate_contrastA
 
 def oil_detector(img, model):
     # 명도 평준화 이미지
-    img_saturate = saturate_contrastB(img, 200)
+    img = saturate_contrastB(img, 200)
     
     # 명도 양극화 이미지
-    img_polarization = saturate_contrastA(img_saturate, 128, 0.5)
+    img = saturate_contrastA(img, 128, 0.5)
 
     # 벡터이미지
-    output = img_polarization
+    #output = img_polarization
     for _ in range(5): 
-        output = saturate_contrastB(output, 140)
+        img = saturate_contrastB(img, 140)
     for _ in range(2):
-        output = saturate_contrastA(output, 50, 0.5)
+        img = saturate_contrastA(img, 50, 0.5)
     for _ in range(3): 
-        output = saturate_contrastB(output, 140)
+        img = saturate_contrastB(img, 140)
     for _ in range(2):
-        output = saturate_contrastA(output, 50, 0.5)
+        img = saturate_contrastA(img, 50, 0.5)
     for _ in range(1): 
-        output = saturate_contrastB(output, 140)
+        img = saturate_contrastB(img, 140)
     for _ in range(2):
-        output = saturate_contrastA(output, 50, 0.5)
+        img = saturate_contrastA(img, 50, 0.5)
     
-    img = output
+    #img = output
 #    cv2.imshow('resuilt', output)
 #    cv2.waitKey()
 

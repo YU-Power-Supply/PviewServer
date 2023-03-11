@@ -89,6 +89,9 @@ async def post_skin(file: UploadFile = File(...)):
     except:
         return JSONResponse(status_code=400, content=dict(msg="it is not a face image."))
     
+    del byte_file
+    del img
+    
     # Convert the resized image to bytes
     _, img_encoded = cv2.imencode('.png', masked_img_256)
     image_bytes = img_encoded.tobytes()
@@ -96,6 +99,10 @@ async def post_skin(file: UploadFile = File(...)):
     async with httpx.AsyncClient() as client:
         response = await client.post("http://localhost:5001/run_ml", files={"file": image_bytes})
     
+    del masked_img_256
+    del img_encoded
+    del image_bytes
+    #return JSONResponse(status_code=201, content=dict(msg="good."))
     skindict = json.loads(response.json())
     
     rdb.hmset(user, skindict)
@@ -119,6 +126,9 @@ async def post_skin(file: UploadFile = File(...)):
 
     skindict = {"wrinkle" : str(Wrinkle.partWrinkleDetect(img)),
                 "dead_skin" : str(DeadSkin.detect_deadskin(img, ""))}
+    
+    del byte_file
+    del img
     
     rdb.hmset(user, skindict)
     return skindict
@@ -147,9 +157,8 @@ async def cosmetic_recommand(email: models.RedisEmail):
         recolist += [(temp.recogoods1, float(temp.cossim1)*float(dist)), (temp.recogoods2, float(temp.cossim2)*float(dist)), (temp.recogoods3, float(temp.cossim3)*float(dist))]
     
     recolist.sort(key=lambda x:x[1], reverse=True)
-    temp = Cosmetics.filter(goods_no__in=[list(l) for l in zip(*recolist[:3])][0]).all(limit=3)
-    for reco in temp:
-        recodict["cosmeticlist"].append({"goods_nm" : reco.goods_nm, "brand_nm" : reco.brand_nm, "category" : reco.category, "price" : reco.price, "ingredient" : reco.ingredient})
+    recofilter = Cosmetics.filter(goods_no__in=[list(l) for l in zip(*recolist[:3])][0]).limit(3)
+    recodict["cosmeticlist"] = [{"goods_nm" : reco.goods_nm, "brand_nm" : reco.brand_nm, "category" : reco.category, "price" : reco.price, "ingredient" : reco.ingredient} for reco in recofilter]
 
     return recodict
 

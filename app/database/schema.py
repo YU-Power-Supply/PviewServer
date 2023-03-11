@@ -142,6 +142,12 @@ class BaseMixin:
         self.close()
         return result
 
+    def limit(self, limit: int):
+        result = self._q.limit(limit)
+        self.close()
+        return result
+    
+
     def count(self):
         result = self._q.count()
         self.close()
@@ -185,11 +191,11 @@ class SkinDatas(Base, BaseMixin):
 class Cosmetics(Base, BaseMixin):
     __tablename__ = "cosmetic"
     goods_no = Column(String(length=16), nullable=True)
-    goods_nm = Column(String(length=20), nullable=True)
+    goods_nm = Column(String(length=50), nullable=True)
     brand_nm = Column(String(length=20), nullable=False)
     category = Column(String(length=10), nullable=False)
     price = Column(Integer, nullable=False)
-    ingredient = Column(String(length=250), nullable=False)
+    ingredient = Column(String(length=4000), nullable=False)
 
 class Recommandation(Base, BaseMixin):
     __tablename__ = "recommandation"
