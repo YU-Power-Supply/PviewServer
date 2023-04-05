@@ -93,5 +93,10 @@ def detect_skintone(image, side_length = 256, pixel_range = 16): # 원래값은 
             grid_value.append(partValue)
 
     gridWeight = 0.8
-    return 100 - round(sum(np.array(grid_value)*0.29761) * gridWeight + global_value * (1-gridWeight), 4)
+    return int(88 - sum(np.array(grid_value)*0.29761) * gridWeight + global_value * (1-gridWeight))
+
+
+
+#    gridWeight = 0.8
+#    return 90 - int(sum(np.array(grid_value)*0.29761) * gridWeight + global_value * (1-gridWeight))
     

@@ -27,4 +27,4 @@ def detect_pore(img):
     img_lds = np.clip((1+alpha)*img_ls - 128*alpha, 0, 255).astype(np.uint8) #히스토그램 스트레칭(명암비 늘리기)
     _, thr_ld = cv2.threshold(img_lds, 200, 255, cv2.THRESH_BINARY_INV)
 
-    return 100 - round((len(thr_ld[thr_ld>0])*len(thr_ld[thr_ld>0]))/len(img[img>0])/30, 4)
+    return 100 - int((len(thr_ld[thr_ld>0])*len(thr_ld[thr_ld>0]))/len(img[img>0])/30)

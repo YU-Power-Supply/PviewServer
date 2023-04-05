@@ -27,7 +27,7 @@ user_vectors = user_vectors_df.to_numpy(dtype=np.float32)
 
 
 user_reco_df = pd.read_excel('app/recommand/recolist.xlsx', index_col=0)
-user_reco_df = user_reco_df.set_index('mbr_no', drop=True)
+user_reco_df = user_reco_df.set_index('mbrNo', drop=True)
 
 # Set up Faiss index
 d = 6  # dimensionality of the vectors

@@ -95,11 +95,15 @@ def partWrinkleDetect(imgGray):
     scoreCount2 = sum([len(i[i == 0]) for i in imgResult])
     weight = [0.7, 0.3, 5.5]
     score = (1 - ((weight[0]*scoreCount1 + weight[1]*scoreCount2)/(256*256))) * weight[2] # 점수 높을수록 주름 많음
-    return round(score, 5)
+    return int(score * 100) + 10
+    #return round(score, 5)
 
 def detect_wrinkle(globalImg, partImg):
     partScore = partWrinkleDetect(partImg)
     globalScore = globalWrinkleDetect(globalImg)
     totalScore = round((partScore*100 + globalScore*10), 5)
     
-    return totalScore
+    if totalScore < 100:
+        return totalScore
+    else:
+        return 97

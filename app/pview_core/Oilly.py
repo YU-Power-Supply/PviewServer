@@ -50,5 +50,6 @@ def oil_detector(img, model):
         print("sum error occured on oil predictor")
         return None
     '''
-
-    return int(32*h[0][0] + 64*h[0][1] + 96*h[0][2])
+    score = 32*h[0][0] + 64*h[0][1] + 96*h[0][2]
+    score = (score - 34) / 61
+    return 35 + int(score * 22)

@@ -6,8 +6,18 @@ import numpy as np
 import json
 
 from app.pview_core import Oilly, PIH, Pore, SkinTone
-from model_loader import ModelLoader
+import tensorflow as tf
 
+class ModelLoader:
+    def __init__(self, model_path):
+        self.model_path = model_path
+        self.model = None
+
+    def load_model(self):
+        if self.model is None:
+            self.model = tf.keras.models.load_model(self.model_path)
+
+        return self.model
 
 import gc
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -25,7 +35,7 @@ pihmodel = ModelLoader("/home/ubuntu/PviewServer/app/pview_core/weights/pih_mode
 app = FastAPI()
 
 @app.post("/run_ml")
-async def register_user(file: bytes = File(...)):
+async def global_detect(file: bytes = File(...)):
     byte_file = np.frombuffer(file, np.uint8)
     img = cv2.imdecode(byte_file, cv2.IMREAD_COLOR)
     skindict = {

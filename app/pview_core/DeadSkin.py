@@ -133,5 +133,6 @@ def detect_deadskin(img, model_path):
     result = - (result - standard_value)  + standard_value 
     result = np.clip(result, 0, 100).astype(np.uint8)
     result = np.clip(result + boundary_value, 0, 100).astype(np.uint8)
-
-    return result
+    print(result)
+    result = (result - 20) / 78
+    return 34 + int(result * 40)

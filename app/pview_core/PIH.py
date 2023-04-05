@@ -78,7 +78,7 @@ def detect_pih(img, pihmodel):
   DIP_SCORE = 10*len(np.where(ita_strong>STANDARD_VALUE)[0])/WLOHE_SCALE + 5*len(np.where(ita_normal>STANDARD_VALUE)[0])/WLOHE_SCALE + len(np.where(ita_weak>STANDARD_VALUE)[0])/WLOHE_SCALE
   ### 2차 색소침착 : 시맨틱 세그맨테이션을 이용한 색소침착 검출
   S_SCORE = test_model(img, pihmodel)
-  return 57
+
 
   # 색소침착 점수 출력부
   P, S_SCORE = 0.9 , 0.1
@@ -87,5 +87,5 @@ def detect_pih(img, pihmodel):
   pih_score = 4*pih_score - 2*(pih_score - CONTRAST_BOUNDARY_VALUE)
   pih_score = np.clip((150 - np.clip(100*pih_score, 0, 100).astype(np.uint8)), 0, 100)
   
-  return int(pih_score)
+  return int(pih_score)+20
 
