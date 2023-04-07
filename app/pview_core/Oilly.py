@@ -51,5 +51,9 @@ def oil_detector(img, model):
         return None
     '''
     score = 32*h[0][0] + 64*h[0][1] + 96*h[0][2]
+    print("oil", h[0][0], h[0][1], h[0][2], score)
+    if score < 35:
+        score += (score-34)*50
+        
     score = (score - 34) / 61
-    return 35 + int(score * 22)
+    return 34 + int(score * 22)
