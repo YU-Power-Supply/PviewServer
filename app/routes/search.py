@@ -7,6 +7,9 @@ from sqlalchemy.orm import Session
 from typing import List
 from io import BytesIO
 import cv2
+import time
+import pymysql
+import random
 
 from app.database.schema import Cosmetics
 from app.models import cosmetic
@@ -67,3 +70,41 @@ async def is_goods_no_exist(goods_no: str):
         return True
     return False
 
+@router.get("/TECEL_TEST") # 화장품 검색
+async def db_test(num_queries: int = 3000):
+
+    # 실행할 쿼리
+    query = ["SELECT * FROM cosmetic;", 
+            "SELECT goods_nm, brand_nm, price FROM cosmetic WHERE category='에센스';", 
+            "SELECT COUNT(*) AS total_count FROM cosmetic WHERE brand_nm='라운드랩';",
+            "SELECT brand_nm, COUNT(*) AS total_count FROM cosmetic GROUP BY brand_nm ORDER BY total_count DESC LIMIT 10;",
+            "SELECT goods_nm, brand_nm, price FROM cosmetic WHERE goods_nm LIKE '%스킨%';",
+            "SELECT * FROM cosmetic WHERE price <= 10000 ORDER BY created_at DESC LIMIT 1;"]
+
+    # MySQL 연결 정보 입력
+    connection = pymysql.connect(
+        host="localhost",
+        user="root",
+        database="dev",
+        cursorclass=pymysql.cursors.DictCursor,
+    )
+
+
+    # 쿼리 실행 및 평균 응답시간 측정
+    total_time = 0
+    for i in range(num_queries):
+        start_time = time.time()
+        with connection.cursor() as cursor:
+            qu = random.choice(query)
+            print(qu)
+            cursor.execute(qu)
+        end_time = time.time()
+        total_time += (end_time - start_time)
+
+    # 평균 응답시간 출력
+    avg_time = total_time / num_queries
+
+    # 연결 종료
+    connection.close()
+    
+    return f"Average response time for {num_queries} queries: {avg_time:.4f} seconds"
